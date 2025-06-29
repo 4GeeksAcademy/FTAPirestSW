@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from typing import List
-from sqlalchemy import String, Boolean, Integer,ForeignKey
+from sqlalchemy import String,  Integer,ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 db = SQLAlchemy()
@@ -52,13 +52,27 @@ class Favorite(db.Model):
     )
 
     def serialize(self):
-        return {
-            "person":self.person_id,
-            "character_id":self.character_id,
-            "planet_id":self.planet_id,
-            "vehicle_id":self.vehicle_id
 
+        data ={
+            "person_id":self.person_id
         }
+
+        if self.characters:
+            data["characters"]={
+                "id": self.characters.character_id,
+                "name":self.characters.character_name
+            }
+        if self.planets:
+            data["planet"]={
+                "id": self.planets.planet_id,
+                "name":self.planets.planet_name
+            }
+        if self.vehicles:
+            data["vehicle"]={
+                "id": self.vehicles.vehicle_id,
+                "name":self.vehicles.vehicle_name
+            }
+        return data
     
     def serialize_with_relations(self):
         data=self.serialize()
@@ -87,7 +101,7 @@ class Character(db.Model):
     
     def serialize_with_relations(self):
         data=self.serialize()
-        data['favorites'] = [favorite.serialize for favorite in self.favorites]
+        data['favorites'] = [favorite.serialize() for favorite in self.favorites]
         return data
     
 
@@ -108,7 +122,7 @@ class Planet(db.Model):
     
     def serialize_wit_relations(self):
         data=self.serialize()
-        data['favorites'] = [favorite.serialize for favorite in self.favorites]
+        data['favorites'] = [favorite.serialize() for favorite in self.favorites]
         return data
     
     
@@ -129,6 +143,6 @@ class Vehicle(db.Model):
     
     def serialize_wit_relations(self):
         data=self.serialize()
-        data['favorites'] = [favorite.serialize for favorite in self.favorites]
+        data['favorites'] = [favorite.serialize() for favorite in self.favorites]
         return data
 
